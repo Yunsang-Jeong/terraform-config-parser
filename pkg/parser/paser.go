@@ -3,20 +3,20 @@ package parser
 import (
 	"errors"
 	"path/filepath"
+	"terraform-config-parser/pkg/filesystem"
 	"terraform-config-parser/pkg/parser/schema"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/spf13/afero"
 )
 
 type Parser struct {
-	fs  *afero.Afero
+	fs  filesystem.FileReader
 	hcl *hclparse.Parser
 }
 
-func NewParser(fs *afero.Afero) *Parser {
+func NewParser(fs filesystem.FileReader) *Parser {
 	return &Parser{
 		fs:  fs,
 		hcl: hclparse.NewParser(),
@@ -61,7 +61,12 @@ func (p *Parser) ParseTerraformWorkspace(dir string) (*TerraformConfig, error) {
 }
 
 func (p *Parser) loadHcl(filename string) (*hcl.File, error) {
-	file, diags := p.hcl.ParseHCLFile(filename)
+	content, err := p.fs.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	
+	file, diags := p.hcl.ParseHCL(content, filename)
 	if file == nil || file.Body == nil || diags.HasErrors() {
 		return nil, errors.Join(diags.Errs()...)
 	}
