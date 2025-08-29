@@ -29,12 +29,12 @@ You can specify a subdirectory within the target path.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		path := args[0]
-		
+
 		// Create local source
 		src := source.NewLocalSource(path, source.SourceConfig{
 			SubDir: localSubDir,
 		})
-		
+
 		// Execute parsing
 		if err := parseAndOutput(src); err != nil {
 			log.Fatal(err)
@@ -44,7 +44,7 @@ You can specify a subdirectory within the target path.`,
 
 func init() {
 	rootCmd.AddCommand(localCmd)
-	
+
 	localCmd.Flags().StringVar(&localSubDir, "subdir", "", "Subdirectory within the target path")
 }
 

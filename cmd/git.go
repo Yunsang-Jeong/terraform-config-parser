@@ -34,13 +34,13 @@ Uses your system's Git configuration for authentication (SSH keys, credential he
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		url := args[0]
-		
+
 		// Create git source (uses system Git configuration)
 		src := source.NewGitSource(url, source.SourceConfig{
 			Branch: gitBranch,
 			SubDir: gitSubDir,
 		})
-		
+
 		// Execute parsing
 		if err := parseAndOutput(src); err != nil {
 			log.Fatal(err)
@@ -50,7 +50,7 @@ Uses your system's Git configuration for authentication (SSH keys, credential he
 
 func init() {
 	rootCmd.AddCommand(gitCmd)
-	
+
 	gitCmd.Flags().StringVarP(&gitBranch, "branch", "b", "", "Git branch or tag to use (default: repository default branch)")
 	gitCmd.Flags().StringVar(&gitSubDir, "subdir", "", "Subdirectory within the repository")
 }
