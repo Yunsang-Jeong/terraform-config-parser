@@ -3,14 +3,15 @@ package source
 import (
 	"os"
 	"path/filepath"
-	"terraform-config-parser/pkg/filesystem"
+
+	"github.com/Yunsang-Jeong/terraform-config-parser/pkg/filesystem"
 
 	"github.com/spf13/afero"
 )
 
 // LocalSource represents a local filesystem source
 type LocalSource struct {
-	Path string
+	Path   string
 	Config SourceConfig
 }
 

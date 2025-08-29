@@ -1,6 +1,6 @@
 package source
 
-import "terraform-config-parser/pkg/filesystem"
+import "github.com/Yunsang-Jeong/terraform-config-parser/pkg/filesystem"
 
 // Source represents different sources of Terraform configurations
 type Source interface {

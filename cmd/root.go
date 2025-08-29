@@ -8,7 +8,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "terraform-config-parser",
+	Use:   "github.com/Yunsang-Jeong/terraform-config-parser",
 	Short: "Parse Terraform configurations from various sources",
 	Long: `A CLI tool to parse and analyze Terraform configurations from local filesystem 
 or remote Git repositories (GitHub/GitLab).`,

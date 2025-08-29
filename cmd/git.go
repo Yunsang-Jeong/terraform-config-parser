@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"log"
-	"terraform-config-parser/pkg/source"
+
+	"github.com/Yunsang-Jeong/terraform-config-parser/pkg/source"
 
 	"github.com/spf13/cobra"
 )

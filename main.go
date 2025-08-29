@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"os"
-	"terraform-config-parser/cmd"
+
+	"github.com/Yunsang-Jeong/terraform-config-parser/cmd"
 )
 
 func main() {

@@ -3,8 +3,9 @@ package parser
 import (
 	"errors"
 	"path/filepath"
-	"terraform-config-parser/pkg/filesystem"
-	"terraform-config-parser/pkg/parser/schema"
+
+	"github.com/Yunsang-Jeong/terraform-config-parser/pkg/filesystem"
+	"github.com/Yunsang-Jeong/terraform-config-parser/pkg/parser/schema"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
@@ -65,7 +66,7 @@ func (p *Parser) loadHcl(filename string) (*hcl.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	file, diags := p.hcl.ParseHCL(content, filename)
 	if file == nil || file.Body == nil || diags.HasErrors() {
 		return nil, errors.Join(diags.Errs()...)

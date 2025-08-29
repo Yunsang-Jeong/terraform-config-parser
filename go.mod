@@ -1,4 +1,4 @@
-module terraform-config-parser
+module github.com/Yunsang-Jeong/terraform-config-parser
 
 go 1.24.1
 

@@ -3,12 +3,13 @@ package parser
 import (
 	"bytes"
 	"encoding/json"
-	"terraform-config-parser/pkg/parser/schema"
+
+	"github.com/Yunsang-Jeong/terraform-config-parser/pkg/parser/schema"
 )
 
 type TerraformConfig struct {
-	Variables []*schema.Variable `json:"variables,omitempty"`
-	Outputs   []*schema.Output   `json:"outputs,omitempty"`
+	Variables []*schema.Variable  `json:"variables,omitempty"`
+	Outputs   []*schema.Output    `json:"outputs,omitempty"`
 	Terraform []*schema.Terraform `json:"terraform,omitempty"`
 }
 
