@@ -79,8 +79,13 @@ func (s *GitSource) getAuthentication() *http.BasicAuth {
 	// GitHub
 	if strings.Contains(hostname, "github.com") {
 		if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+			// Fine-grained tokens start with "github_pat_"
+			username := "token"
+			if strings.HasPrefix(token, "github_pat_") {
+				username = "x-access-token"
+			}
 			return &http.BasicAuth{
-				Username: "token",
+				Username: username,
 				Password: token,
 			}
 		}
@@ -98,8 +103,13 @@ func (s *GitSource) getAuthentication() *http.BasicAuth {
 
 	// GIT_TOKEN (generic)
 	if token := os.Getenv("GIT_TOKEN"); token != "" {
+		// Fine-grained GitHub tokens start with "github_pat_"
+		username := "token"
+		if strings.HasPrefix(token, "github_pat_") {
+			username = "x-access-token"
+		}
 		return &http.BasicAuth{
-			Username: "token",
+			Username: username,
 			Password: token,
 		}
 	}
