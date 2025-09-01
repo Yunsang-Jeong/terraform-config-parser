@@ -2,12 +2,16 @@ package source
 
 import (
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
 
 	"github.com/Yunsang-Jeong/terraform-config-parser/pkg/filesystem"
 
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 )
 
@@ -34,6 +38,11 @@ func (s *GitSource) Fetch() (filesystem.FileReader, string, error) {
 		Depth: 1,
 	}
 
+	// Set authentication if available
+	if auth := s.getAuthentication(); auth != nil {
+		cloneOptions.Auth = auth
+	}
+
 	// Set branch if specified
 	if s.Config.Branch != "" {
 		cloneOptions.ReferenceName = plumbing.ReferenceName("refs/heads/" + s.Config.Branch)
@@ -56,6 +65,46 @@ func (s *GitSource) Fetch() (filesystem.FileReader, string, error) {
 	}
 
 	return billyAdapter, rootPath, nil
+}
+
+func (s *GitSource) getAuthentication() *http.BasicAuth {
+	// Parse URL to determine provider
+	parsedURL, err := url.Parse(s.URL)
+	if err != nil {
+		return nil
+	}
+
+	hostname := strings.ToLower(parsedURL.Hostname())
+
+	// GitHub
+	if strings.Contains(hostname, "github.com") {
+		if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+			return &http.BasicAuth{
+				Username: "token",
+				Password: token,
+			}
+		}
+	}
+
+	// GitLab
+	if strings.Contains(hostname, "gitlab.com") || strings.Contains(hostname, "gitlab") {
+		if token := os.Getenv("GITLAB_TOKEN"); token != "" {
+			return &http.BasicAuth{
+				Username: "gitlab-ci-token",
+				Password: token,
+			}
+		}
+	}
+
+	// GIT_TOKEN (generic)
+	if token := os.Getenv("GIT_TOKEN"); token != "" {
+		return &http.BasicAuth{
+			Username: "token",
+			Password: token,
+		}
+	}
+
+	return nil
 }
 
 func (s *GitSource) Cleanup() error {
