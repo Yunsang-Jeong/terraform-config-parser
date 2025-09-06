@@ -12,8 +12,8 @@ type Source interface {
 
 // SourceConfig holds common configuration for all sources
 type SourceConfig struct {
-	// Branch or tag to use (for git sources)
-	Branch string
+	// Ref specifies the git reference to use (branch, tag, or commit hash)
+	Ref string
 	// Subdirectory within the source
 	SubDir string
 }

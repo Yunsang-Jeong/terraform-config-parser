@@ -1,0 +1,32 @@
+version: '3'
+
+vars:
+  PROJECT: github.com/Yunsang-Jeong/terraform-config-parser
+  BINARY_NAME: tfcp
+  VERSION:
+    sh: cat .version 2>/dev/null || echo "dev"
+
+tasks:
+  default:
+    desc: "Build with version injection"
+    cmds:
+      - task: build
+
+  build:
+    desc: "Build with version injection"
+    cmds:
+      - mkdir -p bin
+      - echo "Building {{.BINARY_NAME}}..."
+      - echo "Version{{":"}} {{.VERSION}}"
+      - |
+        go build \
+          -ldflags "-X {{.PROJECT}}/version.Version={{.VERSION}}" \
+          -o bin/{{.BINARY_NAME}} \
+          .
+      - echo "Build completed{{":"}} bin/{{.BINARY_NAME}}"
+
+  clean:
+    desc: "Remove build artifacts"
+    cmds:
+      - echo "Cleaning build artifacts..."
+      - rm -rf bin
