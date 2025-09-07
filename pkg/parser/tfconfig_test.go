@@ -394,7 +394,7 @@ variable "any" {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			testFS := newTestFileSystem(tt.files)
-			parser := NewParser(testFS)
+			parser := NewParser(testFS, Simple)
 			config, err := parser.ParseTerraformWorkspace(".")
 
 			if tt.expectError && err == nil {
@@ -501,7 +501,7 @@ output "non_sensitive" {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			testFS := newTestFileSystem(tt.files)
-			parser := NewParser(testFS)
+			parser := NewParser(testFS, Simple)
 			config, err := parser.ParseTerraformWorkspace(".")
 
 			if err != nil {
@@ -580,7 +580,7 @@ terraform {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			testFS := newTestFileSystem(tt.files)
-			parser := NewParser(testFS)
+			parser := NewParser(testFS, Simple)
 			config, err := parser.ParseTerraformWorkspace(".")
 
 			if err != nil {
@@ -683,7 +683,151 @@ terraform {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			testFS := newTestFileSystem(tt.files)
-			parser := NewParser(testFS)
+			parser := NewParser(testFS, Simple)
+			config, err := parser.ParseTerraformWorkspace(".")
+
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			validateExpectations(t, config, tt.expectations)
+		})
+	}
+}
+
+func TestParsingLevels(t *testing.T) {
+	tests := []struct {
+		name         string
+		files        map[string]string
+		mode         Mode
+		expectations TestExpectations
+	}{
+		{
+			name: "Simple level - only basic blocks",
+			files: map[string]string{
+				"main.tf": `
+variable "test_var" {
+  type = string
+}
+
+output "test_output" {
+  value = var.test_var
+}
+
+terraform {
+  required_version = ">= 1.0"
+}
+
+resource "aws_instance" "example" {
+  ami           = "ami-12345678"
+  instance_type = "t2.micro"
+}
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+}
+
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+}`,
+			},
+			mode: Simple,
+			expectations: TestExpectations{
+				VariableCount:  ptr(1),
+				OutputCount:    ptr(1),
+				TerraformCount: ptr(1),
+			},
+		},
+		{
+			name: "Detail level - all blocks (when implemented)",
+			files: map[string]string{
+				"main.tf": `
+variable "test_var" {
+  type = string
+}
+
+output "test_output" {
+  value = var.test_var
+}
+
+terraform {
+  required_version = ">= 1.0"
+}
+
+resource "aws_instance" "example" {
+  ami           = "ami-12345678"
+  instance_type = "t2.micro"
+}
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+}
+
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+}`,
+			},
+			mode: Detail,
+			expectations: TestExpectations{
+				VariableCount:  ptr(1),
+				OutputCount:    ptr(1),
+				TerraformCount: ptr(1),
+				// Note: Resource, data, module parsing not implemented yet
+			},
+		},
+		{
+			name: "Simple level - mixed configuration",
+			files: map[string]string{
+				"variables.tf": `
+variable "environment" {
+  type = string
+  validation {
+    condition = contains(["dev", "prod"], var.environment)
+    error_message = "Must be dev or prod"
+  }
+}`,
+				"outputs.tf": `
+output "env" {
+  value = var.environment
+}`,
+				"resources.tf": `
+resource "aws_s3_bucket" "example" {
+  bucket = "my-bucket"
+}
+
+data "aws_caller_identity" "current" {}
+
+module "database" {
+  source = "./modules/database"
+}`,
+				"terraform.tf": `
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}`,
+			},
+			mode: Simple,
+			expectations: TestExpectations{
+				VariableCount:  ptr(1),
+				OutputCount:    ptr(1),
+				TerraformCount: ptr(1),
+				Variables: map[string]*VariableExpectation{
+					"environment": {
+						ValidationCount: ptr(1),
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testFS := newTestFileSystem(tt.files)
+			parser := NewParser(testFS, tt.mode)
 			config, err := parser.ParseTerraformWorkspace(".")
 
 			if err != nil {

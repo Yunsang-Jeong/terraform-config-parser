@@ -54,8 +54,7 @@ func Execute(ctx context.Context) error {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", logger.InfoLevel, "Log level (debug, info, error)")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", logger.ErrorLevel, "Log level (debug, info, error)")
 
-	// Set custom version template for --version flag
 	rootCmd.SetVersionTemplate(`{{printf "%s\n" .Version}}`)
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/Yunsang-Jeong/terraform-config-parser/pkg/source"
 
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
 )
 
 var (
@@ -49,20 +48,15 @@ The --ref parameter accepts:
 	Run: func(cmd *cobra.Command, args []string) {
 		url := args[0]
 
-		logger.Info("Processing git repository",
-			zap.String("url", url),
-			zap.String("ref", gitRef),
-			zap.String("subdir", gitSubDir))
+		logger.InfoKV("Processing git repository", "url", url, "ref", gitRef, "subdir", gitSubDir)
 
-		// Create git source (uses system Git configuration)
 		src := source.NewGitSource(url, source.SourceConfig{
 			Ref:    gitRef,
 			SubDir: gitSubDir,
 		})
 
-		// Execute parsing
 		if err := parseAndOutput(src); err != nil {
-			logger.Error("Failed to parse and output git source", zap.Error(err))
+			logger.ErrorKV("Failed to parse and output git source", "url", url, "ref", gitRef, "subdir", gitSubDir, "error", err)
 			log.Fatal(err)
 		}
 	},
